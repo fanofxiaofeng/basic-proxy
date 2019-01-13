@@ -1,5 +1,6 @@
 package com.study.proxy;
 
+import java.io.File;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 
@@ -7,6 +8,7 @@ public class BasicProxy {
 
     static {
         System.getProperties().put("sun.misc.ProxyGenerator.saveGeneratedFiles", "true");
+        new File("com/sun/proxy").mkdirs();
     }
 
     public static void main(String[] args) {

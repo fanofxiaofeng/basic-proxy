@@ -19,11 +19,28 @@
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
+            <scope>test</scope>
             <version>4.12</version>
         </dependency>
     </dependencies>
 
     <build>
+        <!-- 可以参考 https://maven.apache.org/shared/maven-archiver/examples/classpath.html -->
         <finalName>basic-study</finalName>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.4</version>
+                <configuration>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <mainClass>com.study.proxy.BasicProxy</mainClass>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+        </plugins>
     </build>
 </project>
