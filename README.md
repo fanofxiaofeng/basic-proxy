@@ -8,6 +8,8 @@
 3. [(简书) 动态代理 Proxy 源码分析](https://juejin.im/entry/5a4af4116fb9a045104ad95b)
 4. [(stackoverflow) How to create a directory in Java?](https://stackoverflow.com/questions/3634853/how-to-create-a-directory-in-java)
 5. [(简书) JDK动态代理](https://www.jianshu.com/p/1a76e516aa53)
+6. [(ImportNew) Java Proxy 和 CGLIB 动态代理原理](http://www.importnew.com/27772.html)
+7. [(oracle 文档) Class Proxy](https://docs.oracle.com/javase/7/docs/api/java/lang/reflect/Proxy.html)
 
 
 # 正文
@@ -446,6 +448,14 @@ public final void work() throws  {
 所以如果我们通过 `p` 来调用上述的四个方法之外的方法的话，就不会被代理了。
 如果我们在 `BasicProxy.java` 里通过 `p` 来调用 `getClass()` 方法和 `hashCode()` 方法，
 会看到前者 **不会** 被代理，后者 **会** 被代理。
+
+不过为何 `java.lang.Object` 中的这三个方法也会被代理对象处理呢？
+[参考文章[7]](https://docs.oracle.com/javase/7/docs/api/java/lang/reflect/Proxy.html) 中提到
+> An invocation of the hashCode, equals, 
+or toString methods declared in java.lang.Object on a proxy instance will be encoded and dispatched to the invocation handler's invoke method in the same manner as interface method invocations are encoded and dispatched, 
+as described above. The declaring class of the Method object passed to invoke will be java.lang.Object. 
+Other public methods of a proxy instance inherited from java.lang.Object are not overridden by a proxy class, 
+so invocations of those methods behave like they do for instances of java.lang.Object.
 
 ```java
 package com.study.proxy;
