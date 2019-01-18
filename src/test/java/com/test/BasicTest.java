@@ -6,12 +6,17 @@ import com.study.proxy.KingRobot;
 import org.junit.Assert;
 import org.junit.Test;
 
+import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 
 public class BasicTest {
+    static {
+        System.getProperties().put("sun.misc.ProxyGenerator.saveGeneratedFiles", "true");
+        new File("com/sun/proxy").mkdirs();
+    }
     @Test
     public void trivial() {
         InvocationHandler handler = new DoraemonHandler(new KingRobot());

@@ -1,11 +1,11 @@
 # basic-proxy
-学习 InvocationHandler 方式的动态代理
+学习 `InvocationHandler` 方式的动态代理
 
 # 参考文章
 
 1. [(豆瓣链接) Java 核心技术(卷I)](https://book.douban.com/subject/26880667/) 中的 6.5 小节
 2. [(github) JavaSE6Tutorial 第 16 章 反射（Reflection） ](https://github.com/JustinSDK/JavaSE6Tutorial/blob/master/docs/CH16.md) 中的 16.2.5 小节(*Proxy 類別*)
-3. [(简书) 动态代理 Proxy 源码分析](https://juejin.im/entry/5a4af4116fb9a045104ad95b)
+3. [(掘金) 动态代理 Proxy 源码分析](https://juejin.im/entry/5a4af4116fb9a045104ad95b)
 4. [(stackoverflow) How to create a directory in Java?](https://stackoverflow.com/questions/3634853/how-to-create-a-directory-in-java)
 5. [(简书) JDK动态代理](https://www.jianshu.com/p/1a76e516aa53)
 6. [(ImportNew) Java Proxy 和 CGLIB 动态代理原理](http://www.importnew.com/27772.html)
@@ -15,9 +15,9 @@
 # 正文
 
 动态代理涉及以下三个对象
-1. 代理对象(称为`p`) 
-2. 处理器对象(称为`h`) 
-3. 真正干活的对象(称为`r`)
+1. 代理对象(称为`p`，意为 `proxy`) 
+2. 处理器对象(称为`h`，意为 `handler`) 
+3. 真正干活的对象(称为`r`，意为 `robot`，也就是下文会提到的名为 **打扫王** 的机器人)
 
 我自己想了个例子，不知道算不算贴切。
 **大雄的妈妈** 让 **大雄** 打扫房间，
@@ -27,16 +27,16 @@
 
 在这个例子里，**大雄** 是代理对象 `p`,
 **哆啦A梦** 是处理器对象 `h`，
-**打扫王** 是真正干活的对象`r`
+**打扫王** 是真正干活的对象 `r`
 
-当我们对代理对象 `p` 触发一个函数调用时(**大雄的妈妈** 让 **大雄** 打扫房间)，
-`p` 会把函数调用转化为 `h` 的 `invoke()` 方法调用(**大雄** 让 **哆啦A梦** 想办法并落实)，
-而在 `invoke()` 方法里，`r` 中的相应方法会被调用(**打扫王** 干活)。
+当我们调用 `p` 上的一个方法时(**大雄的妈妈** 让 **大雄** 打扫房间)，
+`p` 会去调用 `h` 中的名为 `invoke` 的方法(**大雄** 让 **哆啦A梦** 想办法并落实)，
+而在这个 `invoke` 方法里，`r` 中的相应方法会被调用(**打扫王** 干活)。
 
 
 
 ## 用到的代码
-我们可以建立[一个小项目](https://github.com/fanofxiaofeng/basic-proxy)来粗略地模拟上述的例子。
+我们可以建立 [一个小项目](https://github.com/fanofxiaofeng/basic-proxy) 来粗略地模拟上述例子。
 包的名称为 `com.study.proxy`。
 
 ![image.png](pic/project.png)
@@ -67,7 +67,7 @@
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
-            <version>4.12</version>
+            <version>4.13.1</version>
         </dependency>
     </dependencies>
 
@@ -156,14 +156,14 @@ public class DoraemonHandler implements InvocationHandler {
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
         System.out.println("proxy 的类型是 " + proxy.getClass().getName());
         System.out.println("被代理的方法的名称为 " + method.getName());
-        System.out.println("我是哆啦A梦，脏活累活还是丢给我兜里的宝贝机器人来做吧⤵");
+        System.out.println("我是哆啦A梦，脏活累活还是丢给打扫王处理吧⤵");
         return method.invoke(target, args);
     }
 }
 ```
 
 
-### [`BasicProxy.java`](src/main/java/com/study/proxy/BasicProxy.java) (其内容与最终版本有些差异)
+### [`BasicProxy.java`](src/main/java/com/study/proxy/BasicProxy.java) (下方展示的内容与最终版本有些差异)
 ```java
 package com.study.proxy;
 
@@ -222,6 +222,11 @@ proxy.work();
 ### 运行结果
 运行 `BasicProxy` 中的 `main()` 方法，效果如下图
 ![image.png](pic/result1.png)
+如果希望直接通过命令行运行的话，可以在项目顶层目录执行如下命令
+```bash
+mvn clean package
+java -jar target/basic-study.jar
+```
 
 
 
@@ -230,11 +235,11 @@ proxy.work();
 2. 在 `DoraemonHandler` 的 `invoke()` 被调用时，会将入参 `proxy` 的实际类型输出(入参 `proxy` 的静态类型为 `java.lang.Object`，实际类型为`com.sun.proxy.$Proxy0`)
 
 先提出三个问题
-1. 不难看出 `1` 和 `2` 中的 `proxy` 的实际类型是相同的，那么它们是否就是同一个对象呢？(是的)
+1. 不难看出 `1` 和 `2` 中的 `proxy` 的实际类型相同，那么它们是否就是同一个对象呢？(是的)
 2. `proxy` 的实际类型为 `com.sun.proxy.$Proxy0`，这个类的结构如何，为何可以把对 `proxy` 的一些方法调用都丢给 `handler` 来处理？
 3. 对 `proxy` 的所有方法调用都会转化为 `handler` 的方法调用吗？
 
-[参考文章[3]](https://juejin.im/entry/5a4af4116fb9a045104ad95b) [参考文章[5]](https://www.jianshu.com/p/1a76e516aa53) 等文章中都提到了保存 `com.sun.proxy.$Proxy0` 对应的 class 文件的方法。
+[参考文章[3]](https://juejin.im/entry/5a4af4116fb9a045104ad95b) [参考文章[5]](https://www.jianshu.com/p/1a76e516aa53) 中都提到了保存 `com.sun.proxy.$Proxy0` 对应的 class 文件的方法。
 在生成代理对象之前，加入如下代码即可
 ```java
 System.getProperties().put("sun.misc.ProxyGenerator.saveGeneratedFiles", "true");
@@ -262,7 +267,7 @@ public class BasicProxy {
 ```
 
 
-运行时会抛 `IOException`，如下图
+运行时可能会抛 `IOException`，如下图
 
 
 ![image.png](pic/exception.png)
@@ -386,14 +391,23 @@ public final class $Proxy0 extends Proxy implements Clean {
 }
 ```
 
-构造函数里有一个 `InvocationHandler` 对象，应该是通过构造函数把 `p` 和 `h` 关联起来的
+构造函数里有一个 `InvocationHandler` 对象，其实就是通过构造函数把 `p` 和 `h` 关联起来的
 ```java
 public $Proxy0(InvocationHandler var1) throws  {
   super(var1);
 }
 ```
-构造函数里调用了父类的构造函数
-![](pic/super.png)
+
+`$Proxy0` 的构造函数里会调用了父类 `java.lang.reflect.Proxy` 的构造函数
+![$Proxy0 的构造函数](pic/super.png)
+
+我们可以在 `java.lang.reflect.Proxy` 类的构造函数里加上一个断点(具体位置如下图)
+![在 java.lang.reflect.Proxy 里加一个断点](pic/proxy_breakpoint.png)
+然后 `debug` `BasicProxy` 类的 `main` 方法
+![debug](pic/debug_main.png)
+不出意外的话，应该会在刚才的断点停下来。
+此时就会看到在 `java.lang.reflect.Proxy` 的构造函数里，`h` 的确是 `DoraemonHandler` 的实例
+![](pic/h.png)
 
 与 `work()` 方法相关的一段代码如下
 ```java
@@ -410,7 +424,7 @@ public final void work() throws  {
 
 ### 三个问题的答案
 三个问题的答案，我把刚才提到的三个问题再贴一下
-> 1. 不难看出 `1` 和 `2` 中的 `proxy` 的实际类型是相同的，那么它们是否就是同一个对象呢？(是的)
+> 1. 不难看出 `1` 和 `2` 中的 `proxy` 的实际类型相同，那么它们是否就是同一个对象呢？(是的)
 > 2. `proxy` 的实际类型为 `com.sun.proxy.$Proxy0`，这个类的结构如何，为何可以把对 `proxy` 的一些方法调用都丢给 `handler` 来处理？
 > 3. 对 `proxy` 的所有方法调用都会转化为 `handler` 的方法调用吗？
 
