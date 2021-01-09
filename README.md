@@ -37,13 +37,13 @@
 
 ## 用到的代码
 我们可以建立 [一个小项目](https://github.com/fanofxiaofeng/basic-proxy) 来粗略地模拟上述例子。
-包的名称为 `com.study.proxy`。
+该项目中的 [basic-proxy-introduction](https://github.com/fanofxiaofeng/basic-proxy/basic-proxy-introduction) 模块与本文有关。
 
-![image.png](pic/project.png)
+![module1.png](pic/module1.png)
 
 红框中的5个文件内容如下
 
-### [`pom.xml`](pom.xml)
+### [`pom.xml`](basic-proxy-introduction/pom.xml)
 ```xml
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0"
@@ -52,15 +52,15 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.study</groupId>
-    <artifactId>basic-study</artifactId>
+    <artifactId>basic-proxy-introduction</artifactId>
     <version>1.0-SNAPSHOT</version>
     <packaging>jar</packaging>
 
-    <properties>
-        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.version>1.8</java.version>
-    </properties>
+    <parent>
+        <groupId>com.study</groupId>
+        <artifactId>basic-proxy</artifactId>
+        <version>1.0-SNAPSHOT</version>
+    </parent>
 
     <dependencies>
         <dependency>
@@ -73,7 +73,7 @@
 
     <build>
         <!-- 可以参考 https://maven.apache.org/shared/maven-archiver/examples/classpath.html -->
-        <finalName>basic-study</finalName>
+        <finalName>basic-study-introduction</finalName>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -93,7 +93,7 @@
 </project>
 ```
 
-### [`Clean.java`](src/main/java/com/study/proxy/Clean.java)
+### [`Clean.java`](basic-proxy-introduction/src/main/java/com/study/proxy/Clean.java)
 其中定义了 `Clean` 接口
 
 ```java
@@ -107,7 +107,7 @@ public interface Clean {
 }
 ```
 
-### [`KingRobot.java`](src/main/java/com/study/proxy/KingRobot.java)
+### [`KingRobot.java`](basic-proxy-introduction/src/main/java/com/study/proxy/KingRobot.java)
 **打扫王** 实现了 `Clean` 接口
 
 ```java
@@ -127,7 +127,7 @@ public class KingRobot implements Clean {
 }
 ```
 
-### [`DoraemonHandler.java`](src/main/java/com/study/proxy/DoraemonHandler.java)
+### [`DoraemonHandler.java`](basic-proxy-introduction/src/main/java/com/study/proxy/DoraemonHandler.java)
 **哆啦A梦** 充当处理器(handler)
 ```java
 package com.study.proxy;
@@ -163,7 +163,7 @@ public class DoraemonHandler implements InvocationHandler {
 ```
 
 
-### [`BasicProxy.java`](src/main/java/com/study/proxy/BasicProxy.java) (下方展示的内容与最终版本有些差异)
+### [`BasicProxy.java`](basic-proxy-introduction/src/main/java/com/study/proxy/BasicProxy.java) (下方展示的内容与最终版本有些差异)
 ```java
 package com.study.proxy;
 
@@ -222,10 +222,13 @@ proxy.work();
 ### 运行结果
 运行 `BasicProxy` 中的 `main()` 方法，效果如下图
 ![image.png](pic/result1.png)
+
 如果希望直接通过命令行运行的话，可以在项目顶层目录执行如下命令
+
 ```bash
 mvn clean package
-java -jar target/basic-study.jar
+cd basic-proxy-introduction/
+java -jar target/basic-study-introduction.jar
 ```
 
 
@@ -306,7 +309,8 @@ public class BasicProxy {
 ```
 
 现在可以成功保存 `com.sun.proxy.$Proxy0` 这个类对应的 `class` 文件了
-效果如![下图](pic/class.png)
+效果如
+![class 文件](pic/class.png)
 
 
 
