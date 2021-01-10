@@ -9,7 +9,7 @@ import java.lang.annotation.RetentionPolicy;
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Decent {
     /**
-     * 是个名门正派吗?
+     * 是名门正派吗?
      *
      * @return 是则返回 true, 否则返回 false (默认值是 true)
      */

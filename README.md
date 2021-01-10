@@ -504,3 +504,5 @@ public class BasicProxy {
 
 
 ![](pic/compare.png)
+
+注解中的一些功能也是通过动态代理来实现的，可以参考 [动态代理在注解(`annotation`)中的应用](basic-proxy-annotation/README.md) 一文
