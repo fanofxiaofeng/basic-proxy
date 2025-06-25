@@ -4,27 +4,26 @@ import com.study.proxy.Clean;
 import com.study.proxy.DoraemonHandler;
 import com.study.proxy.KingRobot;
 import org.junit.Assert;
+import org.junit.BeforeClass;
 import org.junit.Test;
 
-import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Proxy;
 
 public class BasicTest {
-    static {
-        System.getProperties().put("sun.misc.ProxyGenerator.saveGeneratedFiles", "true");
-        new File("com/sun/proxy").mkdirs();
+
+    @BeforeClass
+    public static void init() {
+        System.getProperties().put("jdk.proxy.ProxyGenerator.saveGeneratedFiles", "true");
     }
+
     @Test
     public void trivial() {
         InvocationHandler handler = new DoraemonHandler(new KingRobot());
         Clean proxy = (Clean) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), new Class[]{Clean.class}, handler);
         Assert.assertTrue(Proxy.isProxyClass(proxy.getClass()));
-
-        Class c = Proxy.getProxyClass(Thread.currentThread().getContextClassLoader(), Clean.class);
-        Assert.assertTrue(Proxy.isProxyClass(c));
     }
 
     @Test
@@ -39,11 +38,9 @@ public class BasicTest {
     @Test
     public void reflect() throws Exception {
         InvocationHandler handler = new DoraemonHandler(new KingRobot());
-        Class proxyClass = Proxy.getProxyClass(Thread.currentThread().getContextClassLoader(), Clean.class);
-        Constructor constructor = proxyClass.getConstructor(InvocationHandler.class);
-        Assert.assertTrue(constructor != null);
-        Object proxy = constructor.newInstance(handler);
-        Assert.assertTrue(proxy instanceof Proxy);
-        Assert.assertTrue(proxy instanceof Clean);
+        Clean proxy = (Clean) Proxy.newProxyInstance(Thread.currentThread().getContextClassLoader(), new Class[]{Clean.class}, handler);
+        Constructor<? extends Clean> constructor = proxy.getClass().getConstructor(InvocationHandler.class);
+        Object instance = constructor.newInstance(handler);
+        Assert.assertTrue(instance instanceof Proxy);
     }
 }

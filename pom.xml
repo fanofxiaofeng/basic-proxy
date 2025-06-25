@@ -12,12 +12,13 @@
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-        <java.version>1.8</java.version>
+        <maven.compiler.release>17</maven.compiler.release>
     </properties>
 
     <modules>
         <module>basic-proxy-introduction</module>
         <module>basic-proxy-annotation</module>
+        <module>basic-proxy-impl</module>
     </modules>
 
 </project>
