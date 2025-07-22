@@ -2,26 +2,24 @@ package com.study.proxy.impl.handler;
 
 import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.FieldVisitor;
+import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-import org.objectweb.asm.tree.MethodNode;
 
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.stream.IntStream;
 
-import static org.objectweb.asm.Opcodes.*;
-
 public class FieldHandler implements Handler {
 
     private final ClassWriter classWriter;
-    private final List<MethodNode> methodNodes;
+    private final List<Method> methods;
 
-    private static final int ACCESS_FLAGS = ACC_PRIVATE | ACC_FINAL | ACC_STATIC;
+    private static final int ACCESS_FLAGS = Opcodes.ACC_PRIVATE | Opcodes.ACC_FINAL | Opcodes.ACC_STATIC;
     private static final String DESCRIPTOR = Type.getDescriptor(Method.class);
 
-    public FieldHandler(ClassWriter classWriter, List<MethodNode> methodNodes) {
+    public FieldHandler(ClassWriter classWriter, List<Method> methods) {
         this.classWriter = classWriter;
-        this.methodNodes = methodNodes;
+        this.methods = methods;
     }
 
     /**
@@ -30,9 +28,7 @@ public class FieldHandler implements Handler {
      */
     @Override
     public void process() {
-        // 3 for "equals(java.lang.Object)" method + "hashCode()" method + "toString()" method
-        int cnt = 3 + methodNodes.size();
-        IntStream.range(0, cnt).forEach(i -> {
+        IntStream.range(0, methods.size()).forEach(i -> {
             FieldVisitor fieldVisitor = classWriter.visitField(
                     ACCESS_FLAGS,
                     "m" + i,

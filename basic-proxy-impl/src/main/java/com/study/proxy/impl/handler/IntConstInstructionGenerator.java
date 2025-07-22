@@ -9,9 +9,9 @@ import static org.objectweb.asm.Opcodes.ICONST_4;
 import static org.objectweb.asm.Opcodes.ICONST_5;
 import static org.objectweb.asm.Opcodes.SIPUSH;
 
-public class PushIntHandler {
+public class IntConstInstructionGenerator {
 
-    public void processInt(MethodVisitor methodVisitor, int i) {
+    public void generate(MethodVisitor methodVisitor, int i) {
         if (i <= 5) {
             switch (i) {
                 case 0 -> methodVisitor.visitInsn(ICONST_0);

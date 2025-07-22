@@ -13,6 +13,8 @@ public class ConstructorHandler implements Handler {
 
     private final ClassWriter classWriter;
 
+    private static final String CONSTRUCTOR_NAME = "<init>";
+
     public ConstructorHandler(ClassWriter classWriter) {
         this.classWriter = classWriter;
     }
@@ -29,25 +31,22 @@ public class ConstructorHandler implements Handler {
      */
     @Override
     public void process() {
-        MethodVisitor methodVisitor = classWriter.visitMethod(ACC_PUBLIC, "<init>", "(Ljava/lang/reflect/InvocationHandler;)V", null, null);
+        MethodVisitor constructorVisitor = classWriter.visitMethod(ACC_PUBLIC, CONSTRUCTOR_NAME, "(Ljava/lang/reflect/InvocationHandler;)V", null, null);
 
-        methodVisitor.visitCode();
-        methodVisitor.visitVarInsn(ALOAD, 0);
-        methodVisitor.visitVarInsn(ALOAD, 1);
-        methodVisitor.visitMethodInsn(
+        constructorVisitor.visitCode();
+        constructorVisitor.visitVarInsn(ALOAD, 0);
+        constructorVisitor.visitVarInsn(ALOAD, 1);
+        constructorVisitor.visitMethodInsn(
                 INVOKESPECIAL,
                 Type.getInternalName(Proxy.class),
-                "<init>",
+                CONSTRUCTOR_NAME,
                 "(Ljava/lang/reflect/InvocationHandler;)V",
                 false
         );
-        methodVisitor.visitInsn(RETURN);
-        methodVisitor.visitMaxs(0, 0);
+        constructorVisitor.visitInsn(RETURN);
+        // maxStack and maxLocals will be calculated automatically, so the values here will be ignored
+        constructorVisitor.visitMaxs(-1, -1);
 
-        methodVisitor.visitEnd();
-    }
-
-    public static void main(String[] args) {
-        System.out.println(Type.getInternalName(Proxy.class));
+        constructorVisitor.visitEnd();
     }
 }

@@ -13,6 +13,12 @@ import java.util.stream.Collectors;
 
 public class PrettyResultBuilder {
 
+    private final boolean debug;
+
+    public PrettyResultBuilder(boolean debug) {
+        this.debug = debug;
+    }
+
     public List<List<String>> build(byte[] raw) {
         OutputStream outputStream = new ByteArrayOutputStream();
 
@@ -20,6 +26,13 @@ public class PrettyResultBuilder {
         List<String> lines =
                 Arrays.stream(outputStream.toString().split(System.lineSeparator())).
                         collect(Collectors.toList());
+
+        if (debug) {
+            System.out.println();
+            lines.forEach(System.out::println);
+            System.out.println();
+        }
+
         return split(lines);
     }
 

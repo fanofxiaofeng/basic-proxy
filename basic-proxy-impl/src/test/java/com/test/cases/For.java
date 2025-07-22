@@ -1,4 +1,4 @@
-package com.test;
+package com.test.cases;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
