@@ -2,7 +2,15 @@
 
 ## 1. 背景
 
-因为我之前看过一些 `ASM` 的介绍，而且对 **动态代理** 的基本知识也有一些了解，所以就想把这两个知识点结合起来，做点事情。
+本模块的作用和 [basic-proxy-impl](../basic-proxy-impl) 一样，都是用 `ASM` 来生成动态代理类的 `byte[]`。
+与 [basic-proxy-impl](../basic-proxy-impl) 不同的是，本模块是用 `kotlin` 实现的。
+
+本文和 [basic-proxy-impl 里的 README.md](../basic-proxy-impl/README.md) 的内容大同小异。
+
+因为我之前看过一些 `ASM` 的介绍，
+而且对 **动态代理** 的基本知识也有一些了解，
+所以就想把这两个知识点结合起来，做点事情。
+
 最初的目标是实现和 `java.lang.reflect.Proxy.newProxyInstance(...)` 完全一样的功能，但至少会有以下 `4` 个问题
 
 1. `Proxy.newProxyInstance(...)` 方法的第 `1` 个参数是 `java.lang.ClassLoader`，用于指定类加载器，但类加载器的逻辑和动态代理类的生成并没有直接的关系
@@ -22,7 +30,8 @@
 
 ## 2. 整体思路
 
-在 [basic-proxy](../README.md) 一文中，我们已经研究过了动态代理的基本知识。基于这些知识，我们可以有一个整体的思路。
+在 [basic-proxy](../README.md) 一文中，我们已经研究过了动态代理的基本知识。
+基于这些知识，我们可以有一个整体的思路。
 我们需要在动态代理类中生成 字段/构造函数/其他方法，要点如下 ⬇️
 
 ### 2.1 关于字段
@@ -35,8 +44,9 @@
 2. 在动态代理类进行初始化的时候（即，在 `static` 语句块中），对这 3+n 个 `java.lang.reflect.Method` 类型的字段赋值
 
 ### 2.2 关于动态代理类的构造函数
-如 [basic-proxy](../README.md) 中所提到的，在 [`$Proxy0.java`](../$Proxy0.java) 中可以看到是一个动态代理类具体是什么样子的。
-[`$Proxy0.java`](../$Proxy0.java) 中构造函数如下 ⬇️
+如 [basic-proxy](../README.md) 中所提到的，
+在 [\$Proxy0.java](../\$Proxy0.java) 中可以看到是一个动态代理类具体是什么样子的。
+[\$Proxy0.java](../\$Proxy0.java) 中构造函数如下 ⬇️
 
 ```java
 public $Proxy0(InvocationHandler var1) {
@@ -88,11 +98,13 @@ public final boolean equals(Object var1) {
 利用 `ASMifier` 来生成代码。
 通过如下方式可以查看应该如何调用 `ASM` 的相关 `api` 来生成对应的 `byte[]`。
 
-```java
-org.objectweb.asm.util.ASMifier.main(new String[] {"$SimpleProxy.class"});
+```kotlin
+org.objectweb.asm.util.ASMifier.main(arrayOf($$"$SimpleProxy.class"))
 ```
 
-![ASM.png](../pic/ASM.png)
+示例效果如下图 ⬇️
+
+![ASM_kotlin.png](../pic/ASM_kotlin.png)
 
 基于 `ASMifier` 提供的代码，再进行调整，这就容易多了。
 
@@ -124,27 +136,26 @@ private static final Method m3;
 
 字段的定义比较直观，但我们还是可以借助 `ASMifier` 的帮助。
 对应的代码，我写在 [
-`com.study.proxy.impl.handler.FieldHandler` 类](/src/main/java/com/study/proxy/impl/handler/FieldHandler.java) 的
+`com.study.proxy.impl.handler.FieldHandler` 类](/src/main/kotlin/com/study/proxy/impl/handler/FieldHandler.kt) 的
 `process()` 方法里了。
 `process()` 方法的代码展示如下 ⬇️
 
-```java
+```kotlin
 /**
  * A sample field:
  * <code>private static final java.lang.reflect.Method m0</code>
  */
-@Override
-public void process() {
-    IntStream.range(0, methods.size()).forEach(i -> {
-        FieldVisitor fieldVisitor = classWriter.visitField(
-                ACCESS_FLAGS,
-                "m" + i,
-                DESCRIPTOR,
-                null,
-                null
-        );
-        fieldVisitor.visitEnd();
-    });
+override fun process() {
+   for (i in 0 until methods.size) {
+      val fieldVisitor = classWriter.visitField(
+         accessFlags,
+         "m${i}",
+         descriptor,
+         null,
+         null
+      )
+      fieldVisitor.visitEnd()
+   }
 }
 ```
 
@@ -202,16 +213,22 @@ ClassLoader var0 = $SimpleProxy.class.getClassLoader();
 ```
 
 对应的代码如下
-```java
+```kotlin
 // Put ClassLoader at local variable index 0, used by
 // Class.forName(String, boolean, ClassLoader) calls
-methodVisitor.visitLdcInsn(Type.getType(new ClassNameProvider().typeDescriptor()));
-methodVisitor.visitMethodInsn(INVOKEVIRTUAL, Type.getInternalName(Class.class), "getClassLoader", "()Ljava/lang/ClassLoader;", false);
-methodVisitor.visitVarInsn(ASTORE, 0);
+methodVisitor.visitLdcInsn(Type.getType(ClassNameProvider.typeDescriptor()))
+methodVisitor.visitMethodInsn(
+        INVOKEVIRTUAL,
+        Type.getInternalName(Class::class.java),
+        "getClassLoader",
+        "()Ljava/lang/ClassLoader;",
+        false
+)
+methodVisitor.visitVarInsn(ASTORE, 0)
 ```
 
 第 `2` 步和第 `3` 步是类似的，可以一起处理。
-处理的逻辑在 [`com.study.proxy.impl.handler.ClassInitHandler` 类](src/main/java/com/study/proxy/impl/handler/ClassInitHandler.java) 的 `generateCodeForFieldInitialization(...)` 方法里。
+处理的逻辑在 [`com.study.proxy.impl.handler.ClassInitHandler` 类](src/main/kotlin/com/study/proxy/impl/handler/ClassInitHandler.kt) 的 `generateCodeForFieldInitialization(...)` 方法里。
 这里有一个特殊情况，如果我们要处理的 `interface` 是 `java.util.function.IntConsumer`，
 那么对应的字符赋值会是这样 ⬇️
 ```java
@@ -223,14 +240,15 @@ m4 = Class.forName("java.util.function.IntConsumer", false, var0).getMethod("and
 ```
 这里会发现 `m3` 比较特殊，
 因为 `java.util.function.IntConsumer` 的 `accept(int)` 方法的入参的类型是基本类型 `int`，
-所以是用 `Integer.TYPE` 来表示对应的 `class`。
+所以是用 `java.lang.Integer.TYPE` 来表示对应的 `class`。
 其实这里写成 `int.class` 应该也是可行的，
 但是为了之后方便测试起见，
 我们还是尽量遵守 `Proxy.newProxyInstance(...)` 的做法。
 除了 `int` 类型外，
 其他几个基本类型也需要对应的转化。
+
 代码中有一个 `if` 判断会做对应的处理 ⬇️
-![primitive.png](../pic/primitive.png)
+![primitive_kotlin.png](../pic/primitive_kotlin.png)
 
 第 `4` 步需要运用关于 [`Code` 属性](https://docs.oracle.com/javase/specs/jvms/se24/html/jvms-4.html#jvms-4.7.3) 里 `exception table` 的知识，
 我觉得可以在 `ASMifier` 给出的结果的基础上进行理解。这里就不展开说了。
@@ -252,7 +270,7 @@ return
 
 有了 `ASMifier` 的帮助，可以写出对应的代码。
 这些代码在 [
-`com.study.proxy.impl.handler.ConstructorHandler` 类](src/main/java/com/study/proxy/impl/handler/ConstructorHandler.java)
+`com.study.proxy.impl.handler.ConstructorHandler` 类](src/main/kotlin/com/study/proxy/impl/handler/ConstructorHandler.kt)
 的 `process()` 方法里。
 
 注意，如下的这行代码和 `ASMifier` 给出的代码不同。这是因为我们会统一让 `ASM` 来计算 `Code` 属性中的 `max_stack` 和
@@ -294,7 +312,11 @@ constructorVisitor.visitMaxs(-1,-1);
 20: ireturn
 // 后面还有一些指令，这里略去
 ```
-如果手动转化的话，这里的逻辑相当于 `return ((Integer)super.h.invoke(this, m0, null)).intValue();`
+如果手动转化的话，对应的 `java` 代码是这样的 ⬇️
+```java
+return ((Integer)super.h.invoke(this, m0, null)).intValue();
+```
+
 和 [`$Proxy0.java`](../$Proxy0.java) 里展示的代码略有区别，我们应该以 `javap` 命令展示的结果为准。
 这里有两个特殊的处理
 1. 如果方法中的入参个数为 `0`, 则 `super.h.invoke(...)` 里的最后一个参数会填写成 `null`
@@ -337,26 +359,30 @@ public final boolean equals(Object var1) {
 // 后面还有一些指令，这里略去 
 ```
 
-如果手动转化的话，这里的逻辑相当于 `return ((Boolean)super.h.invoke(this, m0, new Object[]{var1})).booleanValue();`
+如果手动转化的话，对应的 `java` 代码是这样的 ⬇️
+```java
+return ((Boolean)super.h.invoke(this, m0, new Object[]{var1})).booleanValue();
+```
+
 由于 `equals(java.lang.Object)` 方法有一个参数，所以需要把它放到数组中，然后将这个数组作为 `super.h.invoke(...)` 的最后一个参数
 那么如果方法中有 `n` 个参数（`n > 0`），那么需要生成一个长度为 `n`，类型是 `Object[]` 的数组来容纳这些参数。
 这里有一种特殊情况，如果参数中有基本类型出现，那么需要将那些参数转化为对应的包装类。
-将入参转化为 `Object[]` 的逻辑，我写在 [`com.study.proxy.impl.handler.InstanceMethodHandler` 类](src/main/java/com/study/proxy/impl/handler/InstanceMethodHandler.java) 的 `generateObjectArray(...)` 方法里了。
+将入参转化为 `Object[]` 的逻辑，我写在 [`com.study.proxy.impl.handler.InstanceMethodHandler` 类](src/main/kotlin/com/study/proxy/impl/handler/InstanceMethodHandler.kt) 的 `generateObjectArray(...)` 方法里了。
 
 关于 `try-catch` 中需要 `catch` 哪些异常，需要考虑各种情况。
-我把这部分的处理逻辑写在 [`com.study.proxy.impl.handler.InstanceMethodHandler` 类](src/main/java/com/study/proxy/impl/handler/InstanceMethodHandler.java) 的 `computeUniqueCatchList(...)` 方法里了。
+我把这部分的处理逻辑写在 [`com.study.proxy.impl.handler.InstanceMethodHandler` 类](src/main/kotlin/com/study/proxy/impl/handler/InstanceMethodHandler.kt) 的 `computeUniqueCatchList(...)` 方法里了。
 这里还是有几种特殊情况的，我是参考了 [OpenJDK 中的 ProxyGenerator.java](https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/java/lang/reflect/ProxyGenerator.java) 里的 [computeUniqueCatchList(...)](https://github.com/openjdk/jdk/blob/master/src/java.base/share/classes/java/lang/reflect/ProxyGenerator.java#L360) 方法才完成的。
 
 ### 4.4 单元测试
 由于最终生成的是一个 `byte[]`，如何验证它的正确性也是一个需要考虑的问题。
 一个直接的想法是比较以下两者的内容是否完全一致
 * 在 `java.lang.reflect.Proxy.newProxyInstance(...)` 的过程中生成的 `byte[]`
-* [`com.study.proxy.impl.CodeGenerator` 类](src/main/java/com/study/proxy/impl/CodeGenerator.java) 中的 `generate(...)` 方法生成的 `byte[]`
+* [`com.study.proxy.impl.CodeGenerator` 类](src/main/kotlin/com/study/proxy/impl/CodeGenerator.kt) 中的 `generate(...)` 方法生成的 `byte[]`
 
 但两者其实是有差异的，原因如下 ⬇️
 1. 常量池中的元素没有特定的顺序
 2. 在本文的 [1. 背景](#1-背景) 中提到过，本模块生成的动态代理类中，没有 `proxyClassLookup(...)` 方法
 
 一个可行的方案是利用 `org.objectweb.asm.util.TraceClassVisitor` 来生成 `byte[]` 解析后的内容，然后再去对比解析后的内容。
-具体的逻辑在 [`com.test.util.PrettyResultBuilder` 类](src/test/java/com/test/util/PrettyResultBuilder.java) 的 `build(byte[])` 方法中。
-[`com.test.cases.MethodTestSuite`](src/test/java/com/test/util/MethodLineMatcher.java) 是一个测试套件，它汇总了这样的测试。
+具体的逻辑在 [`com.test.util.PrettyResultBuilder` 类](src/test/kotlin/com/test/util/PrettyResultBuilder.kt) 的 `build(byte[])` 方法中。
+[`com.test.cases.MethodTestSuite`](src/test/kotlin/com/test/util/MethodLineMatcher.kt) 是一个测试套件，它汇总了这样的测试。

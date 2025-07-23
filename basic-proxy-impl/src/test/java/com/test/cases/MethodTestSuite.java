@@ -5,16 +5,16 @@ import org.junit.runners.Suite;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
+        ArrayParameterMethodTest.class,
         CloneableInterfaceTest.class,
+        DefaultMethodTest.class,
+        ExceptionMethodTest.class,
+        ExtendTest.class,
+        FunctionInterfaceTest.class,
+        OverrideMethodTest.class,
         RunnableInterfaceTest.class,
         SimpleInterfaceTest.class,
-        FunctionInterfaceTest.class,
-        DefaultMethodTest.class,
         VarArgMethodTest.class,
-        ArrayParameterMethodTest.class,
-        OverrideMethodTest.class,
-        ExceptionMethodTest.class,
-        ExtendTest.class
 })
 public class MethodTestSuite {
 }

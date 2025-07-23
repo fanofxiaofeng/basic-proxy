@@ -375,3 +375,4 @@ public final void work() {
 本项目中还有其他的模块
 * [basic-proxy-annotation](basic-proxy-annotation): 注解中的一些功能也是通过动态代理来实现的，可以参考 [动态代理在注解(`annotation`)中的应用](basic-proxy-annotation/README.md) 一文
 * [basic-proxy-impl](basic-proxy-impl): 利用 `ASM` 来生成动态代理类的 `byte[]`
+* [basic-proxy-kotlin-impl](basic-proxy-kotlin-impl): 与 [basic-proxy-impl](basic-proxy-impl) 类似，但是改用 `kotlin` 实现

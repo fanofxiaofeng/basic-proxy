@@ -17,6 +17,5 @@ public class MethodHandler {
         result.addAll(new MethodFilter().filter(specifiedInterface.getMethods()));
 
         return result;
-
     }
 }

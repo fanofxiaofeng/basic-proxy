@@ -19,6 +19,7 @@
         <module>basic-proxy-introduction</module>
         <module>basic-proxy-annotation</module>
         <module>basic-proxy-impl</module>
+        <module>basic-proxy-kotlin-impl</module>
     </modules>
 
 </project>

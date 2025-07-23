@@ -79,7 +79,7 @@ abstract class TestBase {
 
     private void init() throws Exception {
         if (debug) {
-            System.out.printf("specifiedInterface is: %s%n", specifiedInterface.getName());
+            System.out.println("specifiedInterface is: " + specifiedInterface.getName());
         }
         PrettyResultBuilder builder = new PrettyResultBuilder(debug);
         realResult = builder.build(prepareRealBytes(specifiedInterface));
